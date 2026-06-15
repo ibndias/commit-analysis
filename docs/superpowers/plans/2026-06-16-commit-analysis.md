@@ -279,8 +279,8 @@ def cluster_sessions(times, gap_minutes):
 def lead_in_minutes(complexity, diff_size):
     """Estimate pre-first-commit work, bounded [5, 90] min.
     complexity 1-5 from LLM; diff_size = insertions+deletions."""
-    base = complexity * 12          # 12..60
-    size_bonus = min(diff_size / 50.0, 30)  # up to +30
+    base = 5 + (complexity - 1) * 10  # 5..45 for complexity 1-5
+    size_bonus = min(diff_size / 20.0, 50)  # up to +50
     return int(max(5, min(90, base + size_bonus)))
 
 
