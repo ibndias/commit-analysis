@@ -6,6 +6,9 @@ import re
 import urllib.request
 import urllib.error
 import time
+import subprocess
+import tempfile
+import datetime as dt
 
 
 def load_env(path):
@@ -173,3 +176,95 @@ def score_commit(subject, diff_text, api_key, model):
     except Exception as e:
         return {"quality_score": None, "complexity": None,
                 "est_lead_in_min": None, "rationale": "scoring failed: {}".format(e)}
+
+
+GIT_SEP = "\x1f"   # unit separator between fields
+GIT_REC = "\x1e"   # record separator between commits
+
+
+def _run(cmd, cwd=None):
+    return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, check=True).stdout
+
+
+def resolve_identities(repo_path):
+    """Collect your author identities from git config + gh."""
+    ids = set()
+    for key in ("user.email", "user.name"):
+        try:
+            v = _run(["git", "config", key], cwd=repo_path).strip()
+            if v:
+                ids.add(v)
+        except subprocess.CalledProcessError:
+            pass
+    try:
+        user = json.loads(_run(["gh", "api", "user"]))
+        login, uid = user.get("login"), user.get("id")
+        if login:
+            ids.add(login)
+        if login and uid:
+            ids.add("{}+{}@users.noreply.github.com".format(uid, login))
+    except Exception:
+        pass
+    return ids
+
+
+def resolve_repos(repo_arg, since_days):
+    """Return list of (name, local_path, temp_or_None)."""
+    repos = []
+    if repo_arg:
+        if os.path.isdir(repo_arg):
+            repos.append((os.path.basename(os.path.abspath(repo_arg)), repo_arg, None))
+        else:
+            repos.append(_clone(repo_arg))
+        return repos
+    # --all: discover pushed repos via gh
+    raw = _run(["gh", "api", "--paginate",
+                "/user/repos?affiliation=owner&sort=pushed&per_page=100"])
+    for r in json.loads(raw):
+        pushed = r.get("pushed_at", "")
+        if not pushed:
+            continue
+        when = dt.datetime.strptime(pushed, "%Y-%m-%dT%H:%M:%SZ")
+        if (dt.datetime.utcnow() - when).days <= since_days:
+            try:
+                repos.append(_clone(r["clone_url"]))
+            except Exception as e:
+                print("WARN: skip {}: {}".format(r.get("full_name"), e))
+    return repos
+
+
+def _clone(url):
+    tmp = tempfile.mkdtemp(prefix="ca_")
+    _run(["git", "clone", "--filter=blob:none", "--quiet", url, tmp])
+    name = url.rstrip("/").split("/")[-1].replace(".git", "")
+    return (name, tmp, tmp)
+
+
+def collect_commits(repo_path, identities, since, max_diff_chars):
+    """Return list of commit dicts authored by you within the window, time-sorted."""
+    fmt = GIT_SEP.join(["%H", "%aI", "%ae", "%an", "%s"]) + GIT_REC
+    log = _run(["git", "log", "--no-merges", "--since=" + since,
+                "--pretty=format:" + fmt], cwd=repo_path)
+    commits = []
+    for rec in log.split(GIT_REC):
+        rec = rec.strip("\n")
+        if not rec:
+            continue
+        sha, aiso, email, name, subject = rec.split(GIT_SEP)
+        if not match_author(email, name, identities):
+            continue
+        numstat = _run(["git", "show", "--numstat", "--format=", sha], cwd=repo_path)
+        ins = dele = 0
+        for ln in numstat.splitlines():
+            parts = ln.split("\t")
+            if len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit():
+                ins += int(parts[0]); dele += int(parts[1])
+        diff = _run(["git", "show", "--format=", sha], cwd=repo_path)
+        diff, was_trunc = truncate_diff(diff, max_diff_chars)
+        commits.append({
+            "sha": sha[:10], "time": dt.datetime.fromisoformat(aiso).replace(tzinfo=None),
+            "subject": subject, "insertions": ins, "deletions": dele,
+            "diff": diff, "truncated": was_trunc,
+        })
+    commits.sort(key=lambda c: c["time"])
+    return commits
