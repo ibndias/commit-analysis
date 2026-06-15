@@ -67,3 +67,10 @@ def compute_hours(sessions, complexities, diff_sizes):
         )
         idx += len(sess)
     return total_min / 60.0
+
+
+def truncate_diff(text, max_chars):
+    """Return (text, was_truncated). Appends marker if cut."""
+    if len(text) <= max_chars:
+        return text, False
+    return text[:max_chars] + "...[truncated]", True
