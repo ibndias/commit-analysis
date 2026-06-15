@@ -19,3 +19,14 @@ def load_env(path):
             if key:
                 result[key] = val
     return result
+
+
+def match_author(commit_email, commit_name, identities):
+    """True if a commit's author email or name matches any of your identities.
+    identities: set of lowercase emails/logins."""
+    ident = {i.lower() for i in identities}
+    if commit_email and commit_email.lower() in ident:
+        return True
+    if commit_name and commit_name.lower() in ident:
+        return True
+    return False
