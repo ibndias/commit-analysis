@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Analyze your past-week commits: code quality + estimated hours."""
+import json
 import os
+import re
 
 
 def load_env(path):
@@ -74,3 +76,52 @@ def truncate_diff(text, max_chars):
     if len(text) <= max_chars:
         return text, False
     return text[:max_chars] + "...[truncated]", True
+
+
+def extract_json(text):
+    """Pull the first JSON object out of an LLM reply. None if not found."""
+    fence = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    candidate = fence.group(1) if fence else None
+    if candidate is None:
+        brace = re.search(r"\{.*\}", text, re.DOTALL)
+        candidate = brace.group(0) if brace else None
+    if candidate is None:
+        return None
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        return None
+
+
+PROMPT_SYSTEM = (
+    "You are a meticulous senior code reviewer. "
+    "Output ONLY a single JSON object, no prose, no code fences.\n"
+    "Schema: {\"quality_score\": int 1-10, \"complexity\": int 1-5, "
+    "\"est_lead_in_min\": int, \"rationale\": string <= 2 sentences}.\n\n"
+    "quality_score rubric (be calibrated, do NOT cluster at 7-8):\n"
+    "  2 = buggy or incoherent, no structure, no tests.\n"
+    "  5 = works but mediocre: weak naming/structure, no tests, terse message.\n"
+    "  8 = correct, readable, well-structured, sensible message; tests if warranted.\n"
+    "  10 = exemplary: clear design, thorough tests, excellent message.\n"
+    "Judge: correctness, readability, structure/design, test presence, commit-message hygiene.\n"
+    "complexity rubric: 1=trivial/format, 3=moderate feature, 5=intricate cross-cutting logic.\n"
+    "est_lead_in_min: realistic minutes of thinking/work before this commit."
+)
+
+FEWSHOT = [
+    {"role": "user", "content": "Commit subject: fix typo in README\n\nDiff:\n- teh\n+ the"},
+    {"role": "assistant", "content": '{"quality_score": 6, "complexity": 1, "est_lead_in_min": 5, "rationale": "Trivial correct fix, clear subject, nothing to test."}'},
+    {"role": "user", "content": "Commit subject: add retry with backoff to API client\n\nDiff:\n+def call(...):\n+  for i in range(3): ... exponential sleep ...\n+ tests for retry"},
+    {"role": "assistant", "content": '{"quality_score": 8, "complexity": 3, "est_lead_in_min": 35, "rationale": "Solid resilient design with tests and a descriptive message."}'},
+]
+
+
+def build_prompt(subject, diff_text):
+    """Return OpenRouter chat messages for scoring one commit."""
+    msgs = [{"role": "system", "content": PROMPT_SYSTEM}]
+    msgs.extend(FEWSHOT)
+    msgs.append({
+        "role": "user",
+        "content": "Commit subject: {}\n\nDiff:\n{}".format(subject, diff_text),
+    })
+    return msgs
