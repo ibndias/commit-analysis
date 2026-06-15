@@ -17,6 +17,7 @@ class TestBuildPrompt(unittest.TestCase):
     def test_contains_rubric_and_diff(self):
         msgs = build_prompt("SUBJECT", "DIFFTEXT")
         joined = " ".join(m["content"] for m in msgs)
-        self.assertIn("quality_score", joined)
+        self.assertIn("correctness", joined)
+        self.assertIn("findings", joined)
         self.assertIn("DIFFTEXT", joined)
         self.assertIn("JSON", joined)
