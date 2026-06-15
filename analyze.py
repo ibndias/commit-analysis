@@ -3,6 +3,9 @@
 import json
 import os
 import re
+import urllib.request
+import urllib.error
+import time
 
 
 def load_env(path):
@@ -125,3 +128,48 @@ def build_prompt(subject, diff_text):
         "content": "Commit subject: {}\n\nDiff:\n{}".format(subject, diff_text),
     })
     return msgs
+
+
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+
+def call_openrouter(messages, api_key, model, retries=3):
+    """POST chat messages; return assistant text. Raises after retries."""
+    payload = json.dumps({
+        "model": model,
+        "messages": messages,
+        "temperature": 0.2,
+    }).encode("utf-8")
+    headers = {
+        "Authorization": "Bearer " + api_key,
+        "Content-Type": "application/json",
+    }
+    last_err = None
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(OPENROUTER_URL, data=payload, headers=headers)
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
+            return body["choices"][0]["message"]["content"]
+        except (urllib.error.URLError, KeyError, json.JSONDecodeError) as e:
+            last_err = e
+            time.sleep(2 ** attempt)
+    raise RuntimeError("OpenRouter failed after {} tries: {}".format(retries, last_err))
+
+
+def score_commit(subject, diff_text, api_key, model):
+    """Return parsed score dict or a null-filled dict on failure."""
+    try:
+        reply = call_openrouter(build_prompt(subject, diff_text), api_key, model)
+        parsed = extract_json(reply)
+        if parsed is None:
+            raise ValueError("unparseable reply")
+        return {
+            "quality_score": parsed.get("quality_score"),
+            "complexity": parsed.get("complexity"),
+            "est_lead_in_min": parsed.get("est_lead_in_min"),
+            "rationale": parsed.get("rationale", ""),
+        }
+    except Exception as e:
+        return {"quality_score": None, "complexity": None,
+                "est_lead_in_min": None, "rationale": "scoring failed: {}".format(e)}
