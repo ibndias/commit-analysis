@@ -8,6 +8,7 @@ import urllib.error
 import time
 import subprocess
 import tempfile
+import shutil
 import datetime as dt
 import argparse
 
@@ -219,14 +220,20 @@ def resolve_repos(repo_arg, since_days):
             repos.append(_clone(repo_arg))
         return repos
     # --all: discover pushed repos via gh
-    raw = _run(["gh", "api", "--paginate",
-                "/user/repos?affiliation=owner&sort=pushed&per_page=100"])
+    try:
+        raw = _run(["gh", "api", "--paginate",
+                    "/user/repos?affiliation=owner&sort=pushed&per_page=100"])
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        raise SystemExit("gh repo discovery failed (is `gh` installed and "
+                         "authenticated? run `gh auth login`): {}".format(e))
+    now = dt.datetime.now(dt.timezone.utc)
     for r in json.loads(raw):
         pushed = r.get("pushed_at", "")
         if not pushed:
             continue
-        when = dt.datetime.strptime(pushed, "%Y-%m-%dT%H:%M:%SZ")
-        if (dt.datetime.utcnow() - when).days <= since_days:
+        when = dt.datetime.strptime(pushed, "%Y-%m-%dT%H:%M:%SZ").replace(
+            tzinfo=dt.timezone.utc)
+        if (now - when).days <= since_days:
             try:
                 repos.append(_clone(r["clone_url"]))
             except Exception as e:
@@ -345,11 +352,16 @@ def main(argv=None):
         return
 
     results = []
-    for name, path, _tmp in repos:
-        identities = resolve_identities(path)
-        results.append(analyze_repo(name, path, identities, args, api_key, model))
+    try:
+        for name, path, _tmp in repos:
+            identities = resolve_identities(path)
+            results.append(analyze_repo(name, path, identities, args, api_key, model))
+    finally:
+        for _name, _path, tmp in repos:
+            if tmp:
+                shutil.rmtree(tmp, ignore_errors=True)
 
-    today = dt.datetime.utcnow().strftime("%Y-%m-%d")
+    today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
     data = {
         "generated": today, "window": args.since,
         "repos": results,
