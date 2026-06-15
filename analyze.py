@@ -268,3 +268,32 @@ def collect_commits(repo_path, identities, since, max_diff_chars):
         })
     commits.sort(key=lambda c: c["time"])
     return commits
+
+
+def render_markdown(data):
+    """Render the report dict to a Markdown string."""
+    out = []
+    out.append("# Commit Analysis — {}".format(data["generated"]))
+    out.append("")
+    out.append("Window: commits since **{}**".format(data["window"]))
+    out.append("")
+    out.append("**Totals:** {} commits · {:.1f} estimated hours".format(
+        data["total_commits"], data["total_hours"]))
+    out.append("")
+    for repo in data["repos"]:
+        out.append("## {}".format(repo["name"]))
+        out.append("")
+        out.append("- Estimated hours: **{:.1f}**".format(repo["hours"]))
+        aq = repo["avg_quality"]
+        out.append("- Average quality: **{}**".format(
+            "{:.1f}".format(aq) if aq is not None else "n/a"))
+        out.append("")
+        out.append("| sha | subject | +/- | quality | complexity |")
+        out.append("|-----|---------|-----|---------|------------|")
+        for c in repo["commits"]:
+            out.append("| {} | {} | +{}/-{} | {} | {} |".format(
+                c["sha"], c["subject"].replace("|", "\\|"),
+                c["insertions"], c["deletions"],
+                c.get("quality_score", "n/a"), c.get("complexity", "n/a")))
+        out.append("")
+    return "\n".join(out)
