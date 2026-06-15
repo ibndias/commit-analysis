@@ -2,3 +2,7 @@
 report-*.md
 report-*.json
 __pycache__/
+
+# keep the committed sample reports
+!examples/report-*.md
+!examples/report-*.json

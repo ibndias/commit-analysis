@@ -1,0 +1,904 @@
+{
+  "generated": "2026-06-15",
+  "window": "1 week ago",
+  "model": "google/gemma-4-31b-it",
+  "repos": [
+    {
+      "name": "commit-analysis",
+      "hours": 1.5127777777777778,
+      "avg_quality": 7.955555555555555,
+      "avg_axes": {
+        "correctness": 8.8,
+        "readability": 8.7,
+        "design": 7.4,
+        "test_coverage": 5.9,
+        "commit_hygiene": 8.9
+      },
+      "metrics": {
+        "hotspots": [
+          {
+            "path": "docs/superpowers/plans/2026-06-16-commit-analysis.md",
+            "changes": 926,
+            "commits": 2
+          },
+          {
+            "path": "analyze.py",
+            "changes": 737,
+            "commits": 14
+          },
+          {
+            "path": "README.md",
+            "changes": 147,
+            "commits": 2
+          },
+          {
+            "path": "tests/test_deep.py",
+            "changes": 107,
+            "commits": 1
+          },
+          {
+            "path": "docs/superpowers/specs/2026-06-16-commit-analysis-design.md",
+            "changes": 100,
+            "commits": 1
+          },
+          {
+            "path": "tests/test_sessions.py",
+            "changes": 39,
+            "commits": 1
+          },
+          {
+            "path": "tests/test_parse.py",
+            "changes": 25,
+            "commits": 2
+          },
+          {
+            "path": "tests/test_env.py",
+            "changes": 23,
+            "commits": 1
+          },
+          {
+            "path": "tests/test_render.py",
+            "changes": 20,
+            "commits": 1
+          },
+          {
+            "path": "tests/test_identity.py",
+            "changes": 18,
+            "commits": 1
+          }
+        ],
+        "language_mix": {
+          "(none)": 4,
+          ".md": 1173,
+          ".py": 982
+        },
+        "time_of_day": {
+          "5": 8,
+          "6": 10
+        },
+        "rework_rate": 0.028
+      },
+      "finding_counts": {
+        "minor": 15,
+        "nit": 6,
+        "major": 7,
+        "critical": 1
+      },
+      "commits": [
+        {
+          "sha": "a9fc13a99a",
+          "time": "2026-06-16T05:54:00",
+          "subject": "chore: scaffold commit-analysis project",
+          "insertions": 1026,
+          "deletions": 0,
+          "files": [
+            {
+              "path": ".gitignore",
+              "insertions": 4,
+              "deletions": 0
+            },
+            {
+              "path": "docs/superpowers/plans/2026-06-16-commit-analysis.md",
+              "insertions": 922,
+              "deletions": 0
+            },
+            {
+              "path": "docs/superpowers/specs/2026-06-16-commit-analysis-design.md",
+              "insertions": 100,
+              "deletions": 0
+            },
+            {
+              "path": "tests/__init__.py",
+              "insertions": 0,
+              "deletions": 0
+            }
+          ],
+          "truncated": true,
+          "scores": {
+            "correctness": 10,
+            "readability": 10,
+            "design": 10,
+            "test_coverage": 10,
+            "commit_hygiene": 10
+          },
+          "quality_score": 10.0,
+          "complexity": 1,
+          "est_lead_in_min": 15,
+          "rationale": "Clean scaffolding commit. It establishes a robust project structure, a comprehensive implementation plan, and a proper .gitignore.",
+          "findings": []
+        },
+        {
+          "sha": "4883553c7b",
+          "time": "2026-06-16T05:54:56",
+          "subject": "feat: add .env loader",
+          "insertions": 44,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 21,
+              "deletions": 0
+            },
+            {
+              "path": "tests/test_env.py",
+              "insertions": 23,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 9,
+            "readability": 9,
+            "design": 6,
+            "test_coverage": 9,
+            "commit_hygiene": 7
+          },
+          "quality_score": 8.0,
+          "complexity": 2,
+          "est_lead_in_min": 30,
+          "rationale": "The implementation is clean and well-tested, though it reinvents a common utility (python-dotenv) and the commit subject is slightly misleading as it adds a whole new file rather than just a loader.",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "design",
+              "file": "analyze.py",
+              "line": 7,
+              "issue": "Reinventing .env parsing logic instead of using a standard library like python-dotenv.",
+              "suggestion": "Consider using 'python-dotenv' to handle edge cases like multi-line values or escaped characters."
+            },
+            {
+              "severity": "nit",
+              "category": "style",
+              "file": "tests/test_env.py",
+              "line": 7,
+              "issue": "Temporary files created with delete=False are not explicitly unlinked in the tests.",
+              "suggestion": "Use a context manager or add os.unlink(path) in a tearDown method to avoid leaving junk files in /tmp."
+            }
+          ]
+        },
+        {
+          "sha": "66f7e04ae3",
+          "time": "2026-06-16T05:56:08",
+          "subject": "feat: add author identity matching",
+          "insertions": 29,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 11,
+              "deletions": 0
+            },
+            {
+              "path": "tests/test_identity.py",
+              "insertions": 18,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 9,
+            "readability": 9,
+            "design": 6,
+            "test_coverage": 9,
+            "commit_hygiene": 10
+          },
+          "quality_score": 8.6,
+          "complexity": 2,
+          "est_lead_in_min": 15,
+          "rationale": "The logic is correct and well-tested, but it contains a performance inefficiency by rebuilding the identity set on every function call.",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "perf",
+              "file": "analyze.py",
+              "line": 25,
+              "issue": "The `ident` set is reconstructed from the `identities` input on every call to `match_author`.",
+              "suggestion": "Expect the `identities` set to be pre-normalized to lowercase before being passed to this function, or handle normalization outside the hot loop."
+            }
+          ]
+        },
+        {
+          "sha": "d7fee5ae9b",
+          "time": "2026-06-16T05:57:40",
+          "subject": "feat: add session clustering and hours estimate",
+          "insertions": 76,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 37,
+              "deletions": 0
+            },
+            {
+              "path": "tests/test_sessions.py",
+              "insertions": 39,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 9,
+            "readability": 9,
+            "design": 8,
+            "test_coverage": 8,
+            "commit_hygiene": 10
+          },
+          "quality_score": 8.8,
+          "complexity": 3,
+          "est_lead_in_min": 45,
+          "rationale": "Clean implementation of session clustering and estimation logic with a corresponding test suite. Logic is mathematically sound and well-bounded.",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "perf",
+              "file": "analyze.py",
+              "line": 37,
+              "issue": "cluster_sessions calls sorted(times) regardless of whether the input is already sorted.",
+              "suggestion": "If the caller guarantees sorted input, remove this to avoid O(N log N) overhead on every call."
+            },
+            {
+              "severity": "nit",
+              "category": "style",
+              "file": "analyze.py",
+              "line": 56,
+              "issue": "The variable 'idx' is used to track the global commit index across sessions, which assumes the input 'sessions' list preserves the original flat order of commits.",
+              "suggestion": "Consider passing a list of commit objects containing their indices to make the mapping to complexities/diff_sizes more explicit and less fragile."
+            }
+          ]
+        },
+        {
+          "sha": "1eeccedc1a",
+          "time": "2026-06-16T05:58:25",
+          "subject": "fix: align lead_in_minutes with spec formula",
+          "insertions": 2,
+          "deletions": 2,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 2,
+              "deletions": 2
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 10,
+            "readability": 9,
+            "design": 8,
+            "test_coverage": 5,
+            "commit_hygiene": 10
+          },
+          "quality_score": 8.4,
+          "complexity": 1,
+          "est_lead_in_min": 10,
+          "rationale": "Simple formula adjustment to align with a specification. The logic is clear and bounds are maintained.",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "test",
+              "file": "analyze.py",
+              "line": null,
+              "issue": "Changing a heuristic formula without accompanying test updates or new test cases may lead to regression in estimation accuracy.",
+              "suggestion": "Add a few parameterized tests to verify the new output ranges for various complexity/size combinations."
+            }
+          ]
+        },
+        {
+          "sha": "e49690a728",
+          "time": "2026-06-16T05:58:59",
+          "subject": "fix: lead_in_minutes formula consistent with tests (complexity 1 -> 5min floor)",
+          "insertions": 2,
+          "deletions": 2,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 2,
+              "deletions": 2
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 10,
+            "readability": 9,
+            "design": 8,
+            "test_coverage": 8,
+            "commit_hygiene": 10
+          },
+          "quality_score": 9.0,
+          "complexity": 1,
+          "est_lead_in_min": 10,
+          "rationale": "Corrects a formula to align with documented bounds and tests. The logic is simple, transparent, and the commit is focused.",
+          "findings": []
+        },
+        {
+          "sha": "5ff9a1e22a",
+          "time": "2026-06-16T05:59:06",
+          "subject": "docs: correct lead_in_minutes formula in plan to match tests",
+          "insertions": 2,
+          "deletions": 2,
+          "files": [
+            {
+              "path": "docs/superpowers/plans/2026-06-16-commit-analysis.md",
+              "insertions": 2,
+              "deletions": 2
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 10,
+            "readability": 9,
+            "design": 8,
+            "test_coverage": 5,
+            "commit_hygiene": 10
+          },
+          "quality_score": 8.4,
+          "complexity": 1,
+          "est_lead_in_min": 10,
+          "rationale": "Corrects a formula in documentation to align with implementation/tests. The change is focused and clearly described.",
+          "findings": []
+        },
+        {
+          "sha": "e8667fc733",
+          "time": "2026-06-16T05:59:52",
+          "subject": "feat: add diff truncation",
+          "insertions": 20,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 7,
+              "deletions": 0
+            },
+            {
+              "path": "tests/test_truncate.py",
+              "insertions": 13,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 10,
+            "readability": 9,
+            "design": 8,
+            "test_coverage": 9,
+            "commit_hygiene": 10
+          },
+          "quality_score": 9.2,
+          "complexity": 1,
+          "est_lead_in_min": 10,
+          "rationale": "Clean implementation of a utility function with accompanying unit tests. Logic is straightforward and correct.",
+          "findings": []
+        },
+        {
+          "sha": "52875ae017",
+          "time": "2026-06-16T06:01:16",
+          "subject": "feat: add tuned scoring prompt and JSON extraction",
+          "insertions": 73,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 51,
+              "deletions": 0
+            },
+            {
+              "path": "tests/test_parse.py",
+              "insertions": 22,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 7,
+            "readability": 9,
+            "design": 8,
+            "test_coverage": 8,
+            "commit_hygiene": 9
+          },
+          "quality_score": 8.2,
+          "complexity": 2,
+          "est_lead_in_min": 45,
+          "rationale": "Clean implementation of prompt engineering and JSON extraction with accompanying tests. The regex for JSON extraction is slightly fragile but acceptable for LLM outputs.",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "bug",
+              "file": "analyze.py",
+              "line": 83,
+              "issue": "The regex `\\{.*?\\}` is non-greedy and will fail to capture nested JSON objects (e.g., if the rationale contains braces).",
+              "suggestion": "Consider using a more robust brace-counting parser or a library like `regex` for recursive patterns if nested JSON is expected."
+            },
+            {
+              "severity": "nit",
+              "category": "style",
+              "file": "analyze.py",
+              "line": 124,
+              "issue": "Using `.format()` is fine, but f-strings are preferred in modern Python 3 for readability.",
+              "suggestion": "Use f\"Commit subject: {subject}\\n\\nDiff:\\n{diff_text}\""
+            }
+          ]
+        },
+        {
+          "sha": "bcea31e30c",
+          "time": "2026-06-16T06:02:44",
+          "subject": "feat: add OpenRouter client and commit scoring",
+          "insertions": 48,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 48,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 7,
+            "readability": 8,
+            "design": 6,
+            "test_coverage": 1,
+            "commit_hygiene": 7
+          },
+          "quality_score": 5.8,
+          "complexity": 3,
+          "est_lead_in_min": 60,
+          "rationale": "Implements a functional API client with basic retry logic, but lacks error handling for specific HTTP status codes and has zero test coverage.",
+          "findings": [
+            {
+              "severity": "major",
+              "category": "perf",
+              "file": "analyze.py",
+              "line": 145,
+              "issue": "The retry loop catches all URLError but doesn't distinguish between 4xx (client error) and 5xx (server error).",
+              "suggestion": "Check the HTTP status code; do not retry on 401 Unauthorized or 400 Bad Request."
+            },
+            {
+              "severity": "major",
+              "category": "test",
+              "file": "analyze.py",
+              "line": null,
+              "issue": "No tests provided for the network client or the JSON parsing logic.",
+              "suggestion": "Add unit tests using mock responses to verify retry logic and JSON extraction."
+            },
+            {
+              "severity": "minor",
+              "category": "design",
+              "file": "analyze.py",
+              "line": 154,
+              "issue": "Broad exception catch in score_commit masks potential bugs and returns a mixed-type dictionary.",
+              "suggestion": "Catch specific exceptions (e.g., RuntimeError, ValueError) instead of a generic Exception."
+            },
+            {
+              "severity": "nit",
+              "category": "style",
+              "file": "analyze.py",
+              "line": 135,
+              "issue": "String concatenation used for Authorization header.",
+              "suggestion": "Use an f-string: f'Bearer {api_key}'."
+            }
+          ]
+        },
+        {
+          "sha": "e1c3a979e7",
+          "time": "2026-06-16T06:04:00",
+          "subject": "feat: add repo resolution and commit collection",
+          "insertions": 95,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 95,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 5,
+            "readability": 6,
+            "design": 4,
+            "test_coverage": 1,
+            "commit_hygiene": 7
+          },
+          "quality_score": 4.6,
+          "complexity": 3,
+          "est_lead_in_min": 120,
+          "rationale": "Implements a complex workflow for repo discovery and commit extraction but contains a critical bug (missing json import) and severe performance issues.",
+          "findings": [
+            {
+              "severity": "critical",
+              "category": "bug",
+              "file": "analyze.py",
+              "line": 35,
+              "issue": "NameError: 'json' is not imported but used in resolve_identities and resolve_repos.",
+              "suggestion": "Add 'import json' to the top of the file."
+            },
+            {
+              "severity": "major",
+              "category": "perf",
+              "file": "analyze.py",
+              "line": 116,
+              "issue": "N+1 subprocess problem: calls 'git show' twice per commit inside a loop.",
+              "suggestion": "Use 'git log -p' with a custom format to get the diff and metadata in a single stream."
+            },
+            {
+              "severity": "major",
+              "category": "design",
+              "file": "analyze.py",
+              "line": 88,
+              "issue": "Temporary directories created by _clone are never deleted, leading to disk exhaustion.",
+              "suggestion": "Use tempfile.TemporaryDirectory() as a context manager or implement a cleanup mechanism."
+            },
+            {
+              "severity": "minor",
+              "category": "bug",
+              "file": "analyze.py",
+              "line": 102,
+              "issue": "The split on GIT_SEP will fail if a commit subject contains the unit separator character.",
+              "suggestion": "While unlikely, using a more robust serialization like JSON for the git log format is safer."
+            },
+            {
+              "severity": "minor",
+              "category": "test",
+              "file": "analyze.py",
+              "line": null,
+              "issue": "No tests provided for the new logic which relies heavily on external CLI tools (git, gh).",
+              "suggestion": "Add integration tests or mocks for subprocess calls."
+            }
+          ]
+        },
+        {
+          "sha": "cc29dd00a0",
+          "time": "2026-06-16T06:05:01",
+          "subject": "feat: add markdown report rendering",
+          "insertions": 49,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 29,
+              "deletions": 0
+            },
+            {
+              "path": "tests/test_render.py",
+              "insertions": 20,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 9,
+            "readability": 8,
+            "design": 7,
+            "test_coverage": 6,
+            "commit_hygiene": 9
+          },
+          "quality_score": 7.8,
+          "complexity": 2,
+          "est_lead_in_min": 45,
+          "rationale": "Clean implementation of a report renderer with basic testing and proper escaping of table delimiters.",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "test",
+              "file": "tests/test_render.py",
+              "line": null,
+              "issue": "Test coverage is minimal; it only verifies presence of strings rather than the structural integrity of the Markdown table.",
+              "suggestion": "Add test cases for edge cases, such as empty commit lists, None values for quality/complexity, and subjects containing pipe characters."
+            },
+            {
+              "severity": "nit",
+              "category": "style",
+              "file": "analyze.py",
+              "line": 275,
+              "issue": "Using .format() repeatedly is slightly dated compared to f-strings (Python 3.6+).",
+              "suggestion": "Consider using f-strings for better readability and performance."
+            }
+          ]
+        },
+        {
+          "sha": "d7436d09ad",
+          "time": "2026-06-16T06:07:03",
+          "subject": "feat: add CLI orchestration and report output",
+          "insertions": 70,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 70,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 7,
+            "readability": 8,
+            "design": 6,
+            "test_coverage": 2,
+            "commit_hygiene": 9
+          },
+          "quality_score": 6.4,
+          "complexity": 3,
+          "est_lead_in_min": 60,
+          "rationale": "Implements a functional CLI orchestration layer with clear logic, but lacks error handling for API/IO failures and has no accompanying tests.",
+          "findings": [
+            {
+              "severity": "major",
+              "category": "bug",
+              "file": "analyze.py",
+              "line": 313,
+              "issue": "The loop calls `score_commit` (likely an API call) sequentially for every commit in every repo.",
+              "suggestion": "Implement concurrent requests (e.g., using ThreadPoolExecutor) to avoid extreme latency on large commit histories."
+            },
+            {
+              "severity": "major",
+              "category": "bug",
+              "file": "analyze.py",
+              "line": 348,
+              "issue": "Lack of try-except blocks around file I/O and API calls means a single network timeout or permission error crashes the entire orchestration.",
+              "suggestion": "Wrap `analyze_repo` and file writing in try-except blocks to allow partial success."
+            },
+            {
+              "severity": "minor",
+              "category": "design",
+              "file": "analyze.py",
+              "line": 306,
+              "issue": "The `analyze_repo` function takes the `args` object directly, creating tight coupling between the CLI parser and the business logic.",
+              "suggestion": "Pass specific parameters (since, max_diff_chars, gap_minutes) instead of the `args` namespace."
+            },
+            {
+              "severity": "minor",
+              "category": "style",
+              "file": "analyze.py",
+              "line": 338,
+              "issue": "Use of `dt.datetime.utcnow()` is deprecated in newer Python versions.",
+              "suggestion": "Use `dt.datetime.now(dt.timezone.utc)`."
+            },
+            {
+              "severity": "major",
+              "category": "test",
+              "file": "analyze.py",
+              "line": null,
+              "issue": "Significant new orchestration logic added without any unit or integration tests.",
+              "suggestion": "Add tests for `analyze_repo` using mocked API responses and `main` using mocked `sys.argv`."
+            }
+          ]
+        },
+        {
+          "sha": "94b9b88331",
+          "time": "2026-06-16T06:07:52",
+          "subject": "docs: add README",
+          "insertions": 21,
+          "deletions": 0,
+          "files": [
+            {
+              "path": "README.md",
+              "insertions": 21,
+              "deletions": 0
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 10,
+            "readability": 9,
+            "design": 8,
+            "test_coverage": 7,
+            "commit_hygiene": 10
+          },
+          "quality_score": 8.8,
+          "complexity": 1,
+          "est_lead_in_min": 15,
+          "rationale": "Clear, concise documentation for a new project. Covers setup, usage, and the core logic of the tool.",
+          "findings": []
+        },
+        {
+          "sha": "c9143a122f",
+          "time": "2026-06-16T06:11:46",
+          "subject": "fix: clean up temp clones, guard gh discovery, drop deprecated utcnow",
+          "insertions": 21,
+          "deletions": 9,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 21,
+              "deletions": 9
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 9,
+            "readability": 8,
+            "design": 7,
+            "test_coverage": 3,
+            "commit_hygiene": 6
+          },
+          "quality_score": 6.6,
+          "complexity": 2,
+          "est_lead_in_min": 30,
+          "rationale": "The commit correctly addresses timezone deprecations and resource leaks, though it bundles three distinct changes into one commit.",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "style",
+              "file": "analyze.py",
+              "line": null,
+              "issue": "Commit bundles three unrelated changes (temp file cleanup, error handling for 'gh', and datetime API updates).",
+              "suggestion": "Split into three separate commits for better traceability."
+            },
+            {
+              "severity": "minor",
+              "category": "test",
+              "file": "analyze.py",
+              "line": null,
+              "issue": "No tests added to verify that temp directories are actually cleaned up in the 'finally' block.",
+              "suggestion": "Add a test case that mocks a failure in analyze_repo and asserts the temp directory is deleted."
+            }
+          ]
+        },
+        {
+          "sha": "745f3340bb",
+          "time": "2026-06-16T06:15:41",
+          "subject": "docs: expand README with run guide and example output",
+          "insertions": 114,
+          "deletions": 12,
+          "files": [
+            {
+              "path": "README.md",
+              "insertions": 114,
+              "deletions": 12
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 10,
+            "readability": 10,
+            "design": 9,
+            "test_coverage": 10,
+            "commit_hygiene": 10
+          },
+          "quality_score": 9.8,
+          "complexity": 1,
+          "est_lead_in_min": 30,
+          "rationale": "Comprehensive documentation update that transforms a skeletal README into a professional guide. The addition of examples, flag tables, and clear setup instructions significantly improves onboarding.",
+          "findings": []
+        },
+        {
+          "sha": "a0c470a186",
+          "time": "2026-06-16T06:27:19",
+          "subject": "feat: deep analysis \u2014 multi-axis quality, code-review findings, weekly insights + metrics",
+          "insertions": 400,
+          "deletions": 32,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 291,
+              "deletions": 31
+            },
+            {
+              "path": "tests/test_deep.py",
+              "insertions": 107,
+              "deletions": 0
+            },
+            {
+              "path": "tests/test_parse.py",
+              "insertions": 2,
+              "deletions": 1
+            }
+          ],
+          "truncated": true,
+          "scores": {
+            "correctness": 9,
+            "readability": 8,
+            "design": 8,
+            "test_coverage": 3,
+            "commit_hygiene": 7
+          },
+          "quality_score": 7.0,
+          "complexity": 3,
+          "est_lead_in_min": 60,
+          "rationale": "Significant feature addition implementing multi-axis scoring and metrics. Logic is clean and well-structured, though missing unit tests for the new parsing and aggregation logic.",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "test",
+              "file": "analyze.py",
+              "line": null,
+              "issue": "New logic for `parse_numstat`, `overall_quality`, and `file_hotspots` is not covered by tests.",
+              "suggestion": "Add a test suite with mock git numstat output to verify the parsing and aggregation logic."
+            },
+            {
+              "severity": "nit",
+              "category": "style",
+              "file": "analyze.py",
+              "line": 115,
+              "issue": "Use of `hasattr(t, \"hour\")` is a bit indirect for checking if `t` is a datetime object.",
+              "suggestion": "Use `isinstance(t, dt.datetime)` for better clarity."
+            }
+          ]
+        },
+        {
+          "sha": "74af4a5437",
+          "time": "2026-06-16T06:29:46",
+          "subject": "feat: add --public-only flag to skip private repos in --all discovery",
+          "insertions": 6,
+          "deletions": 2,
+          "files": [
+            {
+              "path": "analyze.py",
+              "insertions": 6,
+              "deletions": 2
+            }
+          ],
+          "truncated": false,
+          "scores": {
+            "correctness": 9,
+            "readability": 9,
+            "design": 8,
+            "test_coverage": 3,
+            "commit_hygiene": 10
+          },
+          "quality_score": 7.8,
+          "complexity": 2,
+          "est_lead_in_min": 15,
+          "rationale": "Clean implementation of a requested feature with correct argument passing and logic. Lack of accompanying tests is the only notable gap.",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "test",
+              "file": "analyze.py",
+              "line": null,
+              "issue": "No new test cases added to verify that private repositories are correctly filtered when --public-only is enabled.",
+              "suggestion": "Add a test case mocking the JSON response from the API containing both public and private repos to verify the filter logic."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "total_hours": 1.5127777777777778,
+  "total_commits": 18,
+  "weekly": {
+    "strengths": [
+      "Rapid feature delivery from project scaffolding to a fully functional CLI orchestration tool",
+      "Strong initial attention to documentation, providing a comprehensive README and run guide",
+      "Consistent commit hygiene in early and mid-stage development",
+      "Effective implementation of complex logic for session clustering and hours estimation"
+    ],
+    "weaknesses": [
+      "Severe degradation in test coverage as project complexity increased, particularly in network and orchestration layers",
+      "Recurring performance anti-patterns, including N+1 subprocess calls (git show) and sequential API requests",
+      "Fragile error handling, evidenced by a critical NameError (missing json import) and broad exception catching",
+      "Poor resource management, specifically the creation of orphaned temporary directories and unlinked files"
+    ],
+    "themes": [
+      "Velocity over Verifiability: Feature completion is prioritized over unit/integration testing",
+      "Resource Leakage: Repeated failures to implement proper cleanup for filesystem and network resources",
+      "Suboptimal Python Idioms: Reliance on .format() and deprecated datetime methods over modern f-strings and timezone-aware objects"
+    ],
+    "narrative": "The developer demonstrated high velocity in building the commit-analysis tool, moving quickly from a scaffold to a feature-rich CLI. However, as the scope expanded to include external API integrations and git subprocesses, quality plummeted. The latter half of the week was marked by critical oversights\u2014such as missing imports and N+1 performance bottlenecks\u2014and a near-total absence of tests for the most volatile parts of the system. While the developer is capable of implementing complex logic, they are currently bypassing essential stability and performance checks in favor of feature completion.",
+    "recommendations": [
+      "Implement a concurrency model (e.g., ThreadPoolExecutor) for the `score_commit` API calls to resolve extreme latency",
+      "Refactor git data collection to use `git log -p` instead of calling `git show` in a loop",
+      "Establish a mandatory testing threshold for new features, specifically targeting the network client and JSON parsing logic",
+      "Adopt a strict context-manager pattern (e.g., tempfile.TemporaryDirectory) for all filesystem operations to prevent disk exhaustion"
+    ]
+  }
+}
