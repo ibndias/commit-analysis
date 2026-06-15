@@ -313,7 +313,7 @@ def resolve_identities(repo_path):
     return ids
 
 
-def resolve_repos(repo_arg, since_days):
+def resolve_repos(repo_arg, since_days, public_only=False):
     """Return list of (name, local_path, temp_or_None)."""
     repos = []
     if repo_arg:
@@ -331,6 +331,8 @@ def resolve_repos(repo_arg, since_days):
                          "authenticated? run `gh auth login`): {}".format(e))
     now = dt.datetime.now(dt.timezone.utc)
     for r in json.loads(raw):
+        if public_only and r.get("private", False):
+            continue
         pushed = r.get("pushed_at", "")
         if not pushed:
             continue
@@ -588,6 +590,8 @@ def main(argv=None):
     p = argparse.ArgumentParser(description="Analyze your past-week commits.")
     p.add_argument("--repo", help="path or URL of a single repo")
     p.add_argument("--all", action="store_true", help="analyze all your repos (default)")
+    p.add_argument("--public-only", action="store_true",
+                   help="with --all, skip your private repos")
     p.add_argument("--since", default="1 week ago")
     p.add_argument("--since-days", type=int, default=7, help="window for --all repo discovery")
     p.add_argument("--gap-minutes", type=int, default=90)
@@ -604,7 +608,7 @@ def main(argv=None):
     model = (args.model or os.environ.get("OPENROUTER_MODEL")
              or env.get("OPENROUTER_MODEL") or "google/gemma-4-31b-it")
 
-    repos = resolve_repos(args.repo, args.since_days)
+    repos = resolve_repos(args.repo, args.since_days, args.public_only)
     if not repos:
         print("No repositories to analyze.")
         return
