@@ -9,6 +9,7 @@ import time
 import subprocess
 import tempfile
 import datetime as dt
+import argparse
 
 
 def load_env(path):
@@ -297,3 +298,72 @@ def render_markdown(data):
                 c.get("quality_score", "n/a"), c.get("complexity", "n/a")))
         out.append("")
     return "\n".join(out)
+
+
+def analyze_repo(name, path, identities, args, api_key, model):
+    """Collect, score, and compute hours for one repo. Returns repo result dict."""
+    commits = collect_commits(path, identities, args.since, args.max_diff_chars)
+    complexities, diff_sizes = {}, {}
+    for i, c in enumerate(commits):
+        score = score_commit(c["subject"], c["diff"], api_key, model)
+        c.update(score)
+        complexities[i] = score["complexity"] or 3
+        diff_sizes[i] = c["insertions"] + c["deletions"]
+    sessions = cluster_sessions([c["time"] for c in commits], args.gap_minutes)
+    hours = compute_hours(sessions, complexities, diff_sizes)
+    quals = [c["quality_score"] for c in commits if c["quality_score"] is not None]
+    avg_q = sum(quals) / len(quals) if quals else None
+    for c in commits:
+        c["time"] = c["time"].isoformat()
+        c.pop("diff", None)
+    return {"name": name, "hours": hours, "avg_quality": avg_q, "commits": commits}
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(description="Analyze your past-week commits.")
+    p.add_argument("--repo", help="path or URL of a single repo")
+    p.add_argument("--all", action="store_true", help="analyze all your repos (default)")
+    p.add_argument("--since", default="1 week ago")
+    p.add_argument("--since-days", type=int, default=7, help="window for --all repo discovery")
+    p.add_argument("--gap-minutes", type=int, default=90)
+    p.add_argument("--max-diff-chars", type=int, default=12000)
+    p.add_argument("--model", default=None)
+    p.add_argument("--out-dir", default=".")
+    p.add_argument("--env", default=".env")
+    args = p.parse_args(argv)
+
+    env = load_env(args.env)
+    api_key = os.environ.get("OPENROUTER_API_KEY") or env.get("OPENROUTER_API_KEY")
+    if not api_key:
+        p.error("OPENROUTER_API_KEY not set (env or .env)")
+    model = (args.model or os.environ.get("OPENROUTER_MODEL")
+             or env.get("OPENROUTER_MODEL") or "google/gemma-4-26b-a4b-it")
+
+    repos = resolve_repos(args.repo, args.since_days)
+    if not repos:
+        print("No repositories to analyze.")
+        return
+
+    results = []
+    for name, path, _tmp in repos:
+        identities = resolve_identities(path)
+        results.append(analyze_repo(name, path, identities, args, api_key, model))
+
+    today = dt.datetime.utcnow().strftime("%Y-%m-%d")
+    data = {
+        "generated": today, "window": args.since,
+        "repos": results,
+        "total_hours": sum(r["hours"] for r in results),
+        "total_commits": sum(len(r["commits"]) for r in results),
+    }
+    json_path = os.path.join(args.out_dir, "report-{}.json".format(today))
+    md_path = os.path.join(args.out_dir, "report-{}.md".format(today))
+    with open(json_path, "w") as fh:
+        json.dump(data, fh, indent=2)
+    with open(md_path, "w") as fh:
+        fh.write(render_markdown(data))
+    print("Wrote {} and {}".format(md_path, json_path))
+
+
+if __name__ == "__main__":
+    main()
